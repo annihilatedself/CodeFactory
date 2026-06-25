@@ -74,7 +74,7 @@ export class Simulation {
     this.fleetSize = opts.fleetSize;
     this.initSystems();
     this.initAgents();
-    this.pushEvent("info", "Aieven orchestrator online", "loading migration blueprint");
+    this.pushEvent("info", "Commander orchestrator online", "loading migration blueprint");
     this.pushEvent("info", `${PHASES.length}-phase plan accepted`, PHASES[0].label);
   }
 

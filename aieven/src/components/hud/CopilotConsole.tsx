@@ -66,7 +66,7 @@ export function CopilotConsole({ ask }: { ask: (q: string) => Promise<QueryResul
         <div className="flex items-center gap-2">
           <Sparkles size={14} className="text-accent" />
           <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-            Aieven Copilot
+            Commander Copilot
           </span>
         </div>
         <div className="flex items-center gap-3">

@@ -2,7 +2,7 @@ import type { MigrationPhase, SystemKind } from "./types";
 
 /**
  * The migration blueprint. In a real deployment this JSON is produced by the
- * Aieven planner and streamed from the backend — here it seeds the simulation.
+ * Commander planner and streamed from the backend — here it seeds the simulation.
  */
 
 export interface SystemSeed {
@@ -21,7 +21,7 @@ export const SYSTEMS: SystemSeed[] = [
   {
     id: "coord",
     label: "Orchestrator",
-    sub: "Aieven control plane",
+    sub: "Commander control plane",
     kind: "coordinator",
     ax: 0.5,
     ay: 0.46,

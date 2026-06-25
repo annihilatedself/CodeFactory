@@ -16,7 +16,7 @@ export function AuthPage({ onComplete }: AuthPageProps) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const title = "Sign in to Aieven";
+  const title = "Sign in";
   const action = "Sign in";
   const canSubmit = useMemo(
     () => email.trim().includes("@") && password.trim().length >= 6,
@@ -62,9 +62,9 @@ export function AuthPage({ onComplete }: AuthPageProps) {
           <div className="flex items-center gap-2.5">
             <BrandMark />
             <div>
-              <p className="font-display text-lg font-semibold text-fg">Aieven</p>
+              <p className="font-display text-lg font-semibold text-fg">Commander</p>
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-faint">
-                agent console
+                migration pane
               </p>
             </div>
           </div>
@@ -75,8 +75,8 @@ export function AuthPage({ onComplete }: AuthPageProps) {
             {title}
           </h1>
           <p className="mt-2 text-sm leading-6 text-muted">
-            Open the agentic visualization pane for live swarm coordination, review,
-            conflict, and consensus.
+            Open the migration pane for live agent coordination, review, conflict,
+            and consensus.
           </p>
         </div>
 
@@ -109,7 +109,7 @@ export function AuthPage({ onComplete }: AuthPageProps) {
                 onChange={(event) => setPassword(event.target.value)}
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
-                placeholder="Backend-issued password"
+                placeholder="Password"
                 className="min-w-0 flex-1 bg-transparent text-sm text-fg placeholder:text-faint focus:outline-none"
               />
               <button
@@ -139,12 +139,6 @@ export function AuthPage({ onComplete }: AuthPageProps) {
             <ArrowRight size={15} />
           </Button>
         </form>
-
-        <div className="mt-5 border-t border-white/[0.06] pt-4">
-          <p className="text-xs leading-5 text-faint">
-            Accounts are provisioned by the backend. Use an issued credential to continue.
-          </p>
-        </div>
       </main>
     </div>
   );

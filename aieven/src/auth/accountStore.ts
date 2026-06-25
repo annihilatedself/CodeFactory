@@ -21,7 +21,7 @@ export function clearSession() {
 export function signIn(email: string, password: string): AuthResult {
   const normalizedEmail = normalizeEmail(email);
   if (normalizedEmail !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
-    return { ok: false, message: "Invalid backend-issued credential." };
+    return { ok: false, message: "Invalid email or password." };
   }
 
   window.localStorage.setItem(SESSION_KEY, normalizedEmail);
