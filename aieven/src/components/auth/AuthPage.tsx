@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import { ArrowRight, Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
-import { createAccount, signIn } from "@/auth/accountStore";
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { signIn } from "@/auth/accountStore";
 import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/hud/Brand";
 
@@ -9,18 +9,15 @@ interface AuthPageProps {
   onComplete: (email: string) => void;
 }
 
-type AuthMode = "signin" | "create";
-
 export function AuthPage({ onComplete }: AuthPageProps) {
-  const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const title = mode === "signin" ? "Sign in to Aieven" : "Create your Aieven access";
-  const action = mode === "signin" ? "Sign in" : "Create access";
+  const title = "Sign in to Aieven";
+  const action = "Sign in";
   const canSubmit = useMemo(
     () => email.trim().includes("@") && password.trim().length >= 6,
     [email, password]
@@ -44,10 +41,7 @@ export function AuthPage({ onComplete }: AuthPageProps) {
     setPending(true);
     setError(null);
     try {
-      const result =
-        mode === "create"
-          ? await createAccount(normalizedEmail, normalizedPassword)
-          : await signIn(normalizedEmail, normalizedPassword);
+      const result = await signIn(normalizedEmail, normalizedPassword);
 
       if (!result.ok) {
         setError(result.message);
@@ -70,14 +64,10 @@ export function AuthPage({ onComplete }: AuthPageProps) {
             <div>
               <p className="font-display text-lg font-semibold text-fg">Aieven</p>
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-faint">
-                secure control
+                agent console
               </p>
             </div>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-accent">
-            <ShieldCheck size={12} />
-            gated
-          </span>
         </div>
 
         <div className="mb-6">
@@ -85,7 +75,8 @@ export function AuthPage({ onComplete }: AuthPageProps) {
             {title}
           </h1>
           <p className="mt-2 text-sm leading-6 text-muted">
-            Use your workspace credentials to open the migration control plane.
+            Open the agentic visualization pane for live swarm coordination, review,
+            conflict, and consensus.
           </p>
         </div>
 
@@ -117,8 +108,8 @@ export function AuthPage({ onComplete }: AuthPageProps) {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 type={showPassword ? "text" : "password"}
-                autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                placeholder="Minimum 6 characters"
+                autoComplete="current-password"
+                placeholder="Backend-issued password"
                 className="min-w-0 flex-1 bg-transparent text-sm text-fg placeholder:text-faint focus:outline-none"
               />
               <button
@@ -149,20 +140,10 @@ export function AuthPage({ onComplete }: AuthPageProps) {
           </Button>
         </form>
 
-        <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-4">
-          <p className="text-xs text-faint">
-            {mode === "signin" ? "Need access?" : "Already have access?"}
+        <div className="mt-5 border-t border-white/[0.06] pt-4">
+          <p className="text-xs leading-5 text-faint">
+            Accounts are provisioned by the backend. Use an issued credential to continue.
           </p>
-          <button
-            type="button"
-            onClick={() => {
-              setMode((value) => (value === "signin" ? "create" : "signin"));
-              setError(null);
-            }}
-            className="text-sm font-medium text-accent transition hover:text-consensus"
-          >
-            {mode === "signin" ? "Create account" : "Sign in"}
-          </button>
         </div>
       </main>
     </div>
