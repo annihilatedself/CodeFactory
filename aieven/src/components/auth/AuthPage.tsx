@@ -64,7 +64,7 @@ export function AuthPage({ onComplete }: AuthPageProps) {
             <div>
               <p className="font-display text-lg font-semibold text-fg">Commander</p>
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-faint">
-                migration pane
+                agentic migration command
               </p>
             </div>
           </div>
@@ -75,8 +75,8 @@ export function AuthPage({ onComplete }: AuthPageProps) {
             {title}
           </h1>
           <p className="mt-2 text-sm leading-6 text-muted">
-            Open the migration pane for live agent coordination, review, conflict,
-            and consensus.
+            Command the migration as agents coordinate, review, challenge, and reach
+            consensus in real time.
           </p>
         </div>
 

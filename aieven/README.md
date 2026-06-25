@@ -1,6 +1,6 @@
-# Aieven — Agent Orchestration Console
+# Aiven — Agent Orchestration Console
 
-A front-end demo of the **Aieven** platform: a cinematic "war-room" view of
+A front-end demo of the **Aiven** platform: a cinematic "war-room" view of
 **hundreds to thousands of AI agents** collaborating on a complex database
 migration across **Apache Kafka, PostgreSQL, OpenSearch, and a Schema Registry**,
 coordinated by an orchestrator control plane.
