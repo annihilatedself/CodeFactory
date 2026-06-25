@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LogOut } from "lucide-react";
 import { backend, simulation } from "@/sim/instance";
 import type { Snapshot } from "@/sim/types";
+import { AuthPage } from "@/components/auth/AuthPage";
 import { SwarmCanvas } from "@/components/SwarmCanvas";
 import { TopBar } from "@/components/hud/TopBar";
 import { SystemsRail } from "@/components/hud/SystemsRail";
@@ -11,6 +13,9 @@ import { CopilotConsole } from "@/components/hud/CopilotConsole";
 
 export default function App() {
   const sim = simulation;
+  const [sessionEmail, setSessionEmail] = useState<string | null>(() =>
+    window.localStorage.getItem("aieven.session.email")
+  );
   const [snap, setSnap] = useState<Snapshot>(() => sim.snapshot());
   const [paused, setPaused] = useState(false);
   const [speed, setSpeed] = useState(1);
@@ -73,6 +78,16 @@ export default function App() {
     []
   );
 
+  const completeAuth = useCallback((email: string) => {
+    window.localStorage.setItem("aieven.session.email", email);
+    setSessionEmail(email);
+  }, []);
+
+  const signOut = useCallback(() => {
+    window.localStorage.removeItem("aieven.session.email");
+    setSessionEmail(null);
+  }, []);
+
   return (
     <div className="relative h-dvh w-screen overflow-hidden bg-void">
       {/* living swarm field */}
@@ -83,8 +98,10 @@ export default function App() {
       {/* vignette to seat the HUD over the field */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(6,9,18,0.7)_100%)]" />
 
+      {!sessionEmail ? <AuthPage onComplete={completeAuth} /> : null}
+
       {/* HUD layer */}
-      <div className="pointer-events-none absolute inset-0 p-3">
+      <div className={`pointer-events-none absolute inset-0 p-3 ${sessionEmail ? "" : "hidden"}`}>
         {/* top bar */}
         <div className="pointer-events-auto absolute inset-x-3 top-3">
           <TopBar
@@ -94,6 +111,17 @@ export default function App() {
             onTogglePause={togglePause}
             onCycleSpeed={cycleSpeed}
           />
+        </div>
+
+        <div className="pointer-events-auto absolute right-3 top-[72px]">
+          <button
+            type="button"
+            onClick={signOut}
+            className="glass glass-sheen inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-faint transition hover:text-fg"
+          >
+            <LogOut size={14} />
+            Sign out
+          </button>
         </div>
 
         {/* left rail */}
