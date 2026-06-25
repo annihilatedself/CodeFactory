@@ -1,0 +1,11 @@
+{
+  "installCommand": "cd aieven && npm install",
+  "buildCommand": "cd aieven && npm run build",
+  "outputDirectory": "aieven/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
