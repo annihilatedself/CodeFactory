@@ -120,11 +120,11 @@ export default function App() {
           />
         </div>
 
-        <div className="pointer-events-auto absolute right-3 top-[72px]">
+        <div className="pointer-events-auto absolute right-4 top-20 z-30">
           <button
             type="button"
             onClick={signOut}
-            className="glass glass-sheen inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-faint transition hover:text-fg"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-accent/35 bg-void/90 px-3 text-sm font-semibold text-fg shadow-[0_0_24px_-8px_rgba(34,211,167,0.9)] backdrop-blur transition hover:border-accent hover:bg-surface"
           >
             <LogOut size={14} />
             Sign out
