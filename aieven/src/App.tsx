@@ -4,6 +4,10 @@ import { clearSession, getSessionEmail } from "@/auth/accountStore";
 import { backend, simulation } from "@/sim/instance";
 import type { Snapshot } from "@/sim/types";
 import { AuthPage } from "@/components/auth/AuthPage";
+import {
+  OrchestrationSetup,
+  type SelectedManifestFile,
+} from "@/components/setup/OrchestrationSetup";
 import { SwarmCanvas } from "@/components/SwarmCanvas";
 import { TopBar } from "@/components/hud/TopBar";
 import { SystemsRail } from "@/components/hud/SystemsRail";
@@ -15,15 +19,18 @@ import { CopilotConsole } from "@/components/hud/CopilotConsole";
 export default function App() {
   const sim = simulation;
   const [sessionEmail, setSessionEmail] = useState<string | null>(() => getSessionEmail());
+  const [orchestrationStarted, setOrchestrationStarted] = useState(
+    () => window.localStorage.getItem("aieven.orchestration.started") === "true"
+  );
   const [snap, setSnap] = useState<Snapshot>(() => sim.snapshot());
-  const [paused, setPaused] = useState(() => !getSessionEmail());
+  const [paused, setPaused] = useState(() => !getSessionEmail() || window.localStorage.getItem("aieven.orchestration.started") !== "true");
   const [speed, setSpeed] = useState(1);
   const simRef = useRef(sim);
   const backendRef = useRef(backend);
 
   useEffect(() => {
-    simRef.current.paused = !sessionEmail || paused;
-  }, [paused, sessionEmail]);
+    simRef.current.paused = !sessionEmail || !orchestrationStarted || paused;
+  }, [orchestrationStarted, paused, sessionEmail]);
 
   // poll the backend for the React HUD
   useEffect(() => {
@@ -83,6 +90,18 @@ export default function App() {
 
   const completeAuth = useCallback((email: string) => {
     setSessionEmail(email);
+    setOrchestrationStarted(false);
+    setPaused(true);
+    window.localStorage.removeItem("aieven.orchestration.started");
+    window.localStorage.removeItem("aieven.orchestration.files");
+    simRef.current.paused = true;
+    void backendRef.current.getSnapshot().then((res) => setSnap(res.snapshot));
+  }, []);
+
+  const startOrchestration = useCallback((files: SelectedManifestFile[]) => {
+    window.localStorage.setItem("aieven.orchestration.started", "true");
+    window.localStorage.setItem("aieven.orchestration.files", JSON.stringify(files));
+    setOrchestrationStarted(true);
     setPaused(false);
     simRef.current.paused = false;
     void backendRef.current.getSnapshot().then((res) => setSnap(res.snapshot));
@@ -90,7 +109,10 @@ export default function App() {
 
   const signOut = useCallback(() => {
     clearSession();
+    window.localStorage.removeItem("aieven.orchestration.started");
+    window.localStorage.removeItem("aieven.orchestration.files");
     setSessionEmail(null);
+    setOrchestrationStarted(false);
     setPaused(true);
     simRef.current.paused = true;
   }, []);
@@ -106,9 +128,20 @@ export default function App() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(6,9,18,0.7)_100%)]" />
 
       {!sessionEmail ? <AuthPage onComplete={completeAuth} /> : null}
+      {sessionEmail && !orchestrationStarted ? (
+        <OrchestrationSetup
+          email={sessionEmail}
+          onStart={startOrchestration}
+          onSignOut={signOut}
+        />
+      ) : null}
 
       {/* HUD layer */}
-      <div className={`pointer-events-none absolute inset-0 p-3 ${sessionEmail ? "" : "hidden"}`}>
+      <div
+        className={`pointer-events-none absolute inset-0 p-3 ${
+          sessionEmail && orchestrationStarted ? "" : "hidden"
+        }`}
+      >
         {/* top bar */}
         <div className="pointer-events-auto absolute inset-x-3 top-3">
           <TopBar
