@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { simulation } from "@/sim/instance";
+import { backend, simulation } from "@/sim/instance";
 import type { Snapshot } from "@/sim/types";
 import { SwarmCanvas } from "@/components/SwarmCanvas";
 import { TopBar } from "@/components/hud/TopBar";
@@ -15,16 +15,37 @@ export default function App() {
   const [paused, setPaused] = useState(false);
   const [speed, setSpeed] = useState(1);
   const simRef = useRef(sim);
+  const backendRef = useRef(backend);
 
-  // poll the simulation snapshot for the React HUD (~8 fps is plenty for text)
+  // poll the backend for the React HUD
   useEffect(() => {
-    const id = setInterval(() => setSnap(simRef.current.snapshot()), 120);
-    return () => clearInterval(id);
+    let disposed = false;
+    let inFlight = false;
+
+    const refresh = () => {
+      if (inFlight) return;
+      inFlight = true;
+      backendRef.current
+        .getSnapshot()
+        .then((res) => {
+          if (!disposed) setSnap(res.snapshot);
+        })
+        .finally(() => {
+          inFlight = false;
+        });
+    };
+
+    refresh();
+    const id = setInterval(refresh, 180);
+    return () => {
+      disposed = true;
+      clearInterval(id);
+    };
   }, []);
 
   const onSelect = useCallback(() => {
-    // selection already written to sim by the canvas; refresh HUD immediately
-    setSnap(simRef.current.snapshot());
+    // selection already written to sim by the canvas; refresh HUD through the backend
+    void backendRef.current.getSnapshot().then((res) => setSnap(res.snapshot));
   }, []);
 
   const togglePause = useCallback(() => {
@@ -44,7 +65,7 @@ export default function App() {
 
   const clearSelection = useCallback(() => {
     simRef.current.selectedId = null;
-    setSnap(simRef.current.snapshot());
+    void backendRef.current.getSnapshot().then((res) => setSnap(res.snapshot));
   }, []);
 
   const ask = useCallback((q: string) => simRef.current.query(q), []);
