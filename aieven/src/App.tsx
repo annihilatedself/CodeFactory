@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LogOut } from "lucide-react";
+import { clearSession, getSessionEmail } from "@/auth/accountStore";
 import { backend, simulation } from "@/sim/instance";
 import type { Snapshot } from "@/sim/types";
 import { AuthPage } from "@/components/auth/AuthPage";
@@ -13,14 +14,16 @@ import { CopilotConsole } from "@/components/hud/CopilotConsole";
 
 export default function App() {
   const sim = simulation;
-  const [sessionEmail, setSessionEmail] = useState<string | null>(() =>
-    window.localStorage.getItem("aieven.session.email")
-  );
+  const [sessionEmail, setSessionEmail] = useState<string | null>(() => getSessionEmail());
   const [snap, setSnap] = useState<Snapshot>(() => sim.snapshot());
-  const [paused, setPaused] = useState(false);
+  const [paused, setPaused] = useState(() => !getSessionEmail());
   const [speed, setSpeed] = useState(1);
   const simRef = useRef(sim);
   const backendRef = useRef(backend);
+
+  useEffect(() => {
+    simRef.current.paused = !sessionEmail || paused;
+  }, [paused, sessionEmail]);
 
   // poll the backend for the React HUD
   useEffect(() => {
@@ -79,13 +82,17 @@ export default function App() {
   );
 
   const completeAuth = useCallback((email: string) => {
-    window.localStorage.setItem("aieven.session.email", email);
     setSessionEmail(email);
+    setPaused(false);
+    simRef.current.paused = false;
+    void backendRef.current.getSnapshot().then((res) => setSnap(res.snapshot));
   }, []);
 
   const signOut = useCallback(() => {
-    window.localStorage.removeItem("aieven.session.email");
+    clearSession();
     setSessionEmail(null);
+    setPaused(true);
+    simRef.current.paused = true;
   }, []);
 
   return (

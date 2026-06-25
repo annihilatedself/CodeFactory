@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowRight, Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
+import { createAccount, signIn } from "@/auth/accountStore";
 import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/hud/Brand";
 
@@ -15,6 +16,7 @@ export function AuthPage({ onComplete }: AuthPageProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const title = mode === "signin" ? "Sign in to Aieven" : "Create your Aieven access";
@@ -24,7 +26,7 @@ export function AuthPage({ onComplete }: AuthPageProps) {
     [email, password]
   );
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedPassword = password.trim();
@@ -39,8 +41,23 @@ export function AuthPage({ onComplete }: AuthPageProps) {
       return;
     }
 
+    setPending(true);
     setError(null);
-    onComplete(normalizedEmail);
+    try {
+      const result =
+        mode === "create"
+          ? await createAccount(normalizedEmail, normalizedPassword)
+          : await signIn(normalizedEmail, normalizedPassword);
+
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+
+      onComplete(result.email);
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -123,8 +140,13 @@ export function AuthPage({ onComplete }: AuthPageProps) {
             </p>
           ) : null}
 
-          <Button type="submit" variant="accent" className="h-11 w-full" disabled={!canSubmit}>
-            {action}
+          <Button
+            type="submit"
+            variant="accent"
+            className="h-11 w-full"
+            disabled={!canSubmit || pending}
+          >
+            {pending ? "Checking account" : action}
             <ArrowRight size={15} />
           </Button>
         </form>
