@@ -32,23 +32,29 @@ const METRIC_TONE: Record<NonNullable<QueryMetric["tone"]>, string> = {
   default: "text-fg",
 };
 
-export function CopilotConsole({ ask }: { ask: (q: string) => QueryResult }) {
+export function CopilotConsole({ ask }: { ask: (q: string) => Promise<QueryResult> }) {
   const [history, setHistory] = useState<QueryResult[]>([]);
   const [input, setInput] = useState("");
   const [open, setOpen] = useState(true);
+  const [pending, setPending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [history]);
 
-  function submit(text: string) {
+  async function submit(text: string) {
     const t = text.trim();
-    if (!t) return;
-    const result = ask(t);
-    setHistory((h) => [...h, result].slice(-8));
-    setInput("");
-    setOpen(true);
+    if (!t || pending) return;
+    setPending(true);
+    try {
+      const result = await ask(t);
+      setHistory((h) => [...h, result].slice(-8));
+      setInput("");
+      setOpen(true);
+    } finally {
+      setPending(false);
+    }
   }
 
   const hasHistory = history.length > 0;
@@ -110,7 +116,7 @@ export function CopilotConsole({ ask }: { ask: (q: string) => QueryResult }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          submit(input);
+          void submit(input);
         }}
         className="border-t border-white/[0.06] p-2.5"
       >
@@ -119,16 +125,16 @@ export function CopilotConsole({ ask }: { ask: (q: string) => QueryResult }) {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask what's happening across the swarm…"
+            placeholder={pending ? "Backend is synthesizing telemetry..." : "Ask what's happening across the swarm…"}
             className="min-w-0 flex-1 bg-transparent text-[13px] text-fg placeholder:text-faint focus:outline-none"
           />
           <button
             type="submit"
-            disabled={!input.trim()}
+            disabled={!input.trim() || pending}
             className="flex shrink-0 items-center gap-1 rounded-lg bg-accent px-2.5 py-1 text-[11px] font-semibold text-void transition disabled:opacity-30"
           >
             <CornerDownLeft size={12} />
-            Ask
+            {pending ? "Wait" : "Ask"}
           </button>
         </div>
         {!hasHistory && (
@@ -137,7 +143,8 @@ export function CopilotConsole({ ask }: { ask: (q: string) => QueryResult }) {
               <button
                 key={s}
                 type="button"
-                onClick={() => submit(s)}
+                onClick={() => void submit(s)}
+                disabled={pending}
                 className="cursor-pointer rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] text-muted transition hover:border-accent/40 hover:text-fg"
               >
                 {s}

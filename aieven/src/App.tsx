@@ -68,7 +68,10 @@ export default function App() {
     void backendRef.current.getSnapshot().then((res) => setSnap(res.snapshot));
   }, []);
 
-  const ask = useCallback((q: string) => simRef.current.query(q), []);
+  const ask = useCallback(
+    async (q: string) => (await backendRef.current.askCopilot(q)).result,
+    []
+  );
 
   return (
     <div className="relative h-dvh w-screen overflow-hidden bg-void">
