@@ -62,6 +62,7 @@ export function AuthPage({ onComplete }: AuthPageProps) {
 
   return (
     <div className="pointer-events-auto absolute inset-0 z-20 flex items-center justify-center px-4 py-8">
+      <div className="absolute inset-0 bg-void" />
       <main className="glass glass-sheen relative w-[min(100%,420px)] rounded-2xl p-5 shadow-2xl">
         <div className="mb-7 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
